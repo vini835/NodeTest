@@ -1,0 +1,44 @@
+const express = require('express');
+const axios = require('axios');
+const cheerio = require('cheerio');
+const Joi = require('joi');
+const app = express();
+app.use(express.json());
+
+
+const news = [];
+
+app.get('/getTimeStories', (req,res)=> {
+
+  const url = 'https://time.com'; 
+    
+    axios(url)
+      .then(response => {
+        const html = response.data;
+        const $ = cheerio.load(html)
+        const statsTable = $('.most-popular-feed__item-container > ul');
+        statsTable.each(function () {
+          const title = $(this).find('most-popular-feed__item-headline > strong').text();
+          const link = $(this).find('.href > strong').text();
+          
+          news.push({
+            title,
+            link,
+          });
+        });
+    
+        console.log(news);
+      })
+      .catch(console.error);
+      
+    res.send(JSON.parse(news));
+});
+
+
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`Listening on port ${port}..`));
+
+
+
+
+
